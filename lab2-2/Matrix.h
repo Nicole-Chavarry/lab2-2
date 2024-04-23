@@ -1,35 +1,33 @@
-﻿#include <iostream>
+#ifndef MATRIX_H
+#define MATRIX_H
+
+#include <iostream>
 
 class Matrix {
 private:
-    unsigned int m;
-    unsigned int n;
     int** data;
+    unsigned int m, n;
 
 public:
-    
-    Matrix(unsigned int rows, unsigned int cols);
-    ~Matrix();
+    Matrix(unsigned int rows, unsigned int columns); // êîíñòðóêòîð
+    ~Matrix(); // äåñòðóêòîð
+    Matrix(const Matrix& other);
+
+    int* operator[](unsigned int i); // îïåðàòîð îáðàùåíèÿ ïî èíäåêñó
+
     void fillRandom();
-    int* operator[](unsigned int i);
-    friend std::ostream& operator<<(std::ostream& os, const Matrix& matrix);
+
     Matrix operator+(const Matrix& other);
-    Matrix& operator+=(const Matrix& other);
     Matrix operator-(const Matrix& other);
-    Matrix& operator-=(const Matrix& other);
     Matrix operator*(const Matrix& other);
-    bool operator==(const Matrix& other) const;
-    bool operator!=(const Matrix& other) const;
+
+    Matrix& operator+=(const Matrix& other);
+    Matrix& operator-=(const Matrix& other);
+
+    bool operator==(const Matrix& other);
+    bool operator!=(const Matrix& other);
+
+    friend std::ostream& operator<<(std::ostream& out, const Matrix& matrix); // îïåðàòîð äëÿ òàáëèöû
 };
-int main() {
-    const unsigned int rows = 3;
-    const unsigned int cols = 4;
 
-    Matrix myMatrix(rows, cols);
-
-    myMatrix.fillRandom();
-
-    std::cout << myMatrix;
-
-    return 0;
-}
+#endif
