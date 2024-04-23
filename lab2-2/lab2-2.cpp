@@ -1,111 +1,112 @@
 #include "Matrix.h"
-#include <random>
+#include <cstdlib>
 
-Matrix::Matrix(unsigned int rows, unsigned int cols) : m(rows), n(cols) {
+
+Matrix::Matrix(unsigned int rows, unsigned int columns) : m(rows), n(columns) {  //конструктор, инициализирует новый обЪект матрицы, класс предсталяет матрицу с базовыми операциями + - *
     data = new int* [m];
     for (unsigned int i = 0; i < m; ++i) {
-        data[i] = new int[n];
+        data[i] = new int[n];                                                    // двумерный массив data
     }
 }
 
-Matrix::~Matrix() {
-    for (unsigned int i = 0; i < m; ++i) {
+Matrix::~Matrix() {                                                            //деструктор, удаляет объект матрицы, освобождает память, перебирает все строки матрицы и освобождает память для каждой строки, 
+    for (unsigned int i = 0; i < m; ++i) {                                     //затем удаляет указатели строки и освобождает память для указателей строк
         delete[] data[i];
     }
     delete[] data;
 }
 
-int* Matrix::operator[](unsigned int i)
-{
+Matrix::Matrix(const Matrix& other) {  //конструктор, инициализирует новый обЪект матрицы, класс предсталяет матрицу с базовыми операциями + - *
+    data = new int* [other.m];
+    m = other.m;
+    n = other.n;
+    for (unsigned int i = 0; i < other.m; ++i) {
+        data[i] = new int[other.n];                                                    // двумерный массив data
+        for (unsigned int j = 0; j < other.n; ++j)
+            data[i][j] = other.data[i][j];
+    }
+}
+
+int* Matrix::operator[](unsigned int i) {                                     //оператор [], который позволяет получить доступ к строке матрицы по заданному индексу
     return data[i];
 }
 
-Matrix Matrix::operator+(const Matrix& operand)
-{
-    if (m != operand.m || n != operand.n) {
-        throw std::invalid_argument("Matrices deben ser del mismo tamaño");
-    }
-
-    Matrix result(m, n); 
-
+void Matrix::fillRandom() {                                            //метод, который заполняет матрицу случайными значениями
     for (unsigned int i = 0; i < m; ++i) {
         for (unsigned int j = 0; j < n; ++j) {
-            result.data[i][j] = data[i][j] + operand.data[i][j];
+            data[i][j] = rand() % 10;
         }
     }
-
-    return result;
 }
 
-Matrix& Matrix::operator+=(const Matrix& operand)
-{
-    if (m != operand.m || n != operand.n) {
-        throw std::invalid_argument("Los tamaños de la matriz no coinciden");
-    }
-
-    for (unsigned int i = 0; i < m; ++i) {
-        for (unsigned int j = 0; j < n; ++j) {
-            data[i][j] += operand.data[i][j];
-        }
-    }
-
-    return *this;
-}
-
-Matrix Matrix::operator-(const Matrix& operand)
-{
-    if (m != operand.m || n != operand.n) {
-        throw std::invalid_argument("Los tamaños de la matriz no coinciden");
-    }
-
-    Matrix result(m, n); 
-
-    for (unsigned int i = 0; i < m; ++i) {
-        for (unsigned int j = 0; j < n; ++j) {
-            result.data[i][j] = data[i][j] - operand.data[i][j];
-        }
-    }
-
-    return result;
-}
-
-Matrix& Matrix::operator-=(const Matrix& operand)
-{
-    if (m != operand.m || n != operand.n) {
-        throw std::invalid_argument("Los tamaños de la matriz no son adecuados para la operación de multiplicación");
-    }
-
-    for (unsigned int i = 0; i < m; ++i) {
-        for (unsigned int j = 0; j < n; ++j) {
-            data[i][j] -= operand.data[i][j];
-        }
-    }
-
-    return *this;
-}
-
-Matrix Matrix::operator*(const Matrix& operand)
-{
-    if (n != operand.m) {
-        throw std::invalid_argument("El número de columnas de la primera tabla no coincide con el número de columnas de la segunda tabla");
-    }
-
-    Matrix result(m, operand.n);
-
-    for (unsigned int i = 0; i < m; ++i) {
-        for (unsigned int j = 0; j < operand.n; ++j) {
-            result.data[i][j] = 0;
-            for (unsigned int k = 0; k < n; ++k) {
-                result.data[i][j] += data[i][k] * operand.data[k][j];
+Matrix Matrix::operator*(const Matrix& other) {
+    if (n == other.m) {
+        Matrix result(m, other.n);
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < other.n; ++j) {
+                result[i][j] = 0;
+                for (unsigned int k = 0; k < n; ++k) {
+                    result[i][j] += data[i][k] * other.data[k][j];
+                }
             }
         }
+        return result;
     }
-
-    return result;
+    else std::cout << "The number of columns of Matrix 1 does not match the number of rows of Matrix 2! \n";
 }
 
-bool Matrix::operator==(const Matrix& other) const
-{
+Matrix& Matrix::operator+=(const Matrix& other) {  //для добавления другой матрицы
+    if (m == other.m || n == other.n) {
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < n; ++j) {
+                data[i][j] += other.data[i][j];
+            }
+        }
+        return *this;
+    }
+    else std::cout << "Matrix dimensions do not match! \n";
+}
+
+Matrix Matrix::operator+(const Matrix& other) {
+    if (m == other.m || n == other.n) {
+        Matrix result(m, n);
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < n; ++j) {
+                result[i][j] = data[i][j] + other.data[i][j];
+            }
+        }
+        return result;
+    }
+    else std::cout << "Matrix dimensions do not match! \n";
+}
+
+Matrix& Matrix::operator-=(const Matrix& other) {  //для вычитания другой матрицы из текущей
+    if (m == other.m || n == other.n) {
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < n; ++j) {
+                data[i][j] -= other.data[i][j];
+            }
+        }
+        return *this;
+    }
+    else std::cout << "Matrix dimensions do not match! \n";
+}
+
+Matrix Matrix::operator-(const Matrix& other) {
+    if (m == other.m || n == other.n) {
+        Matrix result(m, n);
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < n; ++j) {
+                result[i][j] = data[i][j] - other.data[i][j];
+            }
+        }
+        return result;
+    }
+    else std::cout << "Matrix dimensions do not match! \n";
+}
+
+
+bool Matrix::operator==(const Matrix& other) {  //для сравнения матриц на равенство
     if (m != other.m || n != other.n) {
         return false;
     }
@@ -117,35 +118,49 @@ bool Matrix::operator==(const Matrix& other) const
             }
         }
     }
-
     return true;
 }
 
-bool Matrix::operator!=(const Matrix& other) const
-{
+bool Matrix::operator!=(const Matrix& other) {  //для сравнения матриц на неравенство
     return !(*this == other);
 }
 
-void Matrix::fillRandom()
-{
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> dis(0, 9);
-
-    for (unsigned int i = 0; i < m; ++i) {
-        for (unsigned int j = 0; j < n; ++j) {
-            data[i][j] = dis(gen); 
-        }
-    }
-}
-
-std::ostream& operator<<(std::ostream& os, const Matrix& matrix)
-{
+std::ostream& operator<<(std::ostream& out, const Matrix& matrix) {  //оператор вывода в поток, для красивого вывода
     for (unsigned int i = 0; i < matrix.m; ++i) {
         for (unsigned int j = 0; j < matrix.n; ++j) {
-            os << matrix.data[i][j] << " ";
+            out << matrix.data[i][j] << " ";
         }
-        os << std::endl;
+        out << std::endl;
     }
-    return os;
+    return out;
+}
+
+int main() {
+    srand(time(0));
+
+    Matrix matrix1(3, 3);
+    matrix1.fillRandom();
+    std::cout << "Matrix 1:" << std::endl;
+    std::cout << matrix1 << std::endl;
+
+    Matrix matrix2(3, 3);
+    matrix2.fillRandom();
+    std::cout << "Matrix 2:" << std::endl;
+    std::cout << matrix2 << std::endl;
+
+    std::cout << "Sum of Matrix 1 and Matrix 2:" << std::endl;
+    Matrix sum = matrix1 + matrix2;
+    std::cout << sum << std::endl;
+
+    std::cout << "Difference of Matrix 1 and Matrix 2:" << std::endl;
+    Matrix difference = matrix1 - matrix2;
+    std::cout << difference << std::endl;
+
+    std::cout << "Product of Matrix 1 and Matrix 2:" << std::endl;
+    Matrix product = matrix1 * matrix2;
+    std::cout << product << std::endl;
+
+    
+
+    return 0;
 }
